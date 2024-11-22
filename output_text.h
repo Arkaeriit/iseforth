@@ -3,6 +3,7 @@
 
 void output_init(void);
 void output_display(void);
+char* output_get(void);
 void output_deinit(void);
 
 #endif
