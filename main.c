@@ -1,15 +1,26 @@
+#include <readline/readline.h>
 #include "dynamic_array.h"
-#include <stdio.h>
+#include "output_text.h"
+#include <SEForth.h>
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 int main(void) {
-    dynamic_array_t* da = da_new();
-    const char* str = "Hello, world!\n";
-    for (size_t i=0; i<strlen(str); i++) {
-        da_append(da, str[i]);
+    output_init();
+    forth_state_t* fs = sef_init();
+    for (int i=0; i<10; i++) {
+        char* line = readline("> ");
+        if (line == NULL) {
+            break;
+        }
+        sef_parse_string(fs, line);
+        sef_parse_char(fs, '\n');
+        output_display();
+        free(line);
     }
-    printf("%s", (char*) da_get(da));
-    da_free(da);
+    sef_free(fs);
+    output_deinit();
     return 0;
 }
 
