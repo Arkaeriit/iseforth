@@ -9,6 +9,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+static void clear_color(void) {
+    printf("\e[m");
+}
+
 int main(void) {
     output_init();
     forth_state_t* fs = sef_init();
@@ -16,7 +20,8 @@ int main(void) {
     config_init(fs);
     rl_completion_entry_function = completion_generator;
     while (sef_is_running(fs)) {
-        char* line = readline(sef_is_compiling(fs) ? config_get_compiling_prompt() : config_get_prompt());
+        char* line = readline(config_get_prompt());
+        clear_color();
         if (line == NULL) {
             break;
         }
