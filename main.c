@@ -15,7 +15,7 @@ int main(void) {
     completion_init(fs);
     config_init(fs);
     rl_completion_entry_function = completion_generator;
-    for (int i=0; i<10; i++) {
+    while (sef_is_running(fs)) {
         char* line = readline(sef_is_compiling(fs) ? config_get_compiling_prompt() : config_get_prompt());
         if (line == NULL) {
             break;

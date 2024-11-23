@@ -23,7 +23,7 @@ char* output_get(void) {
 void output_display(void) {
     char* all_output = output_get();
     bool end_on_new_line = strlen(all_output) != 0 && all_output[strlen(all_output)-1] == '\n';
-    const char* end = end_on_new_line ? "" : "\n";
+    const char* end = end_on_new_line || strlen(all_output) == 0 ? "" : "\n";
     printf("%s%s", all_output, end);
     free(all_output);
 }
