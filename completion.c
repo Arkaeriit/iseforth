@@ -40,6 +40,7 @@ static void read_words(void) {
     clear_list();
     sef_parse_string(state_copy, "words ");
     char* word_list = output_get();
+    // TODO: cache size to optimize
     char* word_list_copy = word_list;
     while (*word_list) {
         // Step 1: searching for the word in of itself
@@ -71,11 +72,47 @@ static void read_words(void) {
             break;
         }
         // Step 6, add the word to the list
-        char* word_owned = strdup(word);
-        da_append(list_of_words, word_owned);
+    char* word_owned = strdup(word);
+    da_append(list_of_words, word_owned);
 
+}
+free(word_list_copy);
+}
+
+/* ----------------------------- Completion API ----------------------------- */
+
+void completion_init(forth_state_t* fs) {
+state_copy = fs;
+list_of_words = da_new();
+void* null = NULL;
+da_append(list_of_words, null);
+read_words();
+}
+
+char* completion_generator(const char* input, int state) {
+static size_t current_index;
+static char** words = NULL;
+
+if (state == 0) {
+        current_index = 0;
+        read_words();
+        words = da_get(list_of_words);
     }
-    free(word_list_copy);
+
+    while (words[current_index]) {
+        if (!strncmp(input, words[current_index], strlen(input))) {
+            return strdup(words[current_index++]);
+        } else {
+            current_index++;
+        }
+    }
+
+    return NULL;
+}
+
+void completion_deinit(void) {
+    clear_list();
+    da_free(list_of_words);
 }
 
 /* ---------------------------------- Test ---------------------------------- */

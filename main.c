@@ -11,7 +11,8 @@
 int main(void) {
     output_init();
     forth_state_t* fs = sef_init();
-    test(fs);
+    completion_init(fs);
+    rl_completion_entry_function = completion_generator;
     for (int i=0; i<10; i++) {
         char* line = readline("> ");
         if (line == NULL) {
@@ -25,6 +26,7 @@ int main(void) {
         output_display();
         free(line);
     }
+    completion_deinit();
     sef_free(fs);
     output_deinit();
     return 0;
