@@ -54,6 +54,7 @@ void config_init(forth_state_t* fs) {
     get_prompt();
     config_get_prompt();
     get_compiling_prompt();
+    config_get_history_size();
 }
 
 char* config_get_prompt(void) {
@@ -63,5 +64,11 @@ char* config_get_prompt(void) {
     prompt = malloc(needed_size);
     sprintf(prompt, "%s%s%s", get_prompt_color(), get_current_prompt(), get_code_color());
     return prompt;
+}
+
+int config_get_history_size(void) {
+    static sef_int_t history_file_size;
+    read_constant_from_forth(state_copy, "isef_history_file_size", &history_file_size);
+    return (int) history_file_size;
 }
 
