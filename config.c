@@ -72,3 +72,9 @@ int config_get_history_size(void) {
     return (int) history_file_size;
 }
 
+char* config_get_history_file(void) {
+    static char* history_file;
+    read_constant_from_forth(state_copy, "isef_history_file", &history_file);
+    return history_file;
+}
+

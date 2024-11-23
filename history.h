@@ -2,7 +2,7 @@
 #define HISTORY_H
 
 void history_init(void);
-void history_add(const char* line);
+void history_add(char* line);
 void history_deinit(void);
 
 #endif

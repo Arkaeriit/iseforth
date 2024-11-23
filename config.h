@@ -6,6 +6,7 @@
 void config_init(forth_state_t* fs);
 char* config_get_prompt(void);
 int config_get_history_size(void);
+char* config_get_history_file(void);
 
 #endif
 

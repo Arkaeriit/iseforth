@@ -44,7 +44,6 @@ int main(void) {
         sef_parse_string(fs, line);
         sef_parse_char(fs, '\n');
         output_display();
-        free(line);
     }
     deinit(fs);
     return 0;
