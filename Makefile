@@ -4,7 +4,7 @@ CC := gcc
 
 all : iseforth
 
-C_SRC := main.c dynamic_array.c output_text.c completion.c config.c
+C_SRC := main.c dynamic_array.c output_text.c completion.c config.c default_config.c
 C_HEADERS := dynamic_array.h output_text.h completion.h config.h
 C_OBJS := $(C_SRC:%.c=%.o)
 
@@ -14,7 +14,14 @@ iseforth : $(C_OBJS)
 %.o : %.c $(C_HEADERS)
 	$(CC) -c $< $(CFLAGS) -o $@
 
+%.c : %.frt
+	name=$$(echo $< | sed s:.frt*::); \
+		 echo "const char* $$name = " > $@
+	cat $< | sed 's:( [^)]*): :g; s:\s\+\([^"]\): \1:g; s:\\ .*::;  s:":\\":g; s:^:":; s:$$:\\n":;' | grep -v '" \?\\n"'  >> $@
+	echo ';' >> $@
+
 clean :
 	rm -f *.o
+	rm -f default_config.c
 	rm -f iseforth
 

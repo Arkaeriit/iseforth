@@ -12,12 +12,11 @@
 int main(void) {
     output_init();
     forth_state_t* fs = sef_init();
-    sef_parse_string(fs, "s\"  ok \" drop constant isef_prompt ");
     completion_init(fs);
     config_init(fs);
     rl_completion_entry_function = completion_generator;
     for (int i=0; i<10; i++) {
-        char* line = readline(config_get_prompt());
+        char* line = readline(sef_is_compiling(fs) ? config_get_compiling_prompt() : config_get_prompt());
         if (line == NULL) {
             break;
         }
