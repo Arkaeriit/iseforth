@@ -115,17 +115,3 @@ void completion_deinit(void) {
     da_free(list_of_words);
 }
 
-/* ---------------------------------- Test ---------------------------------- */
-
-void test(forth_state_t* fs) {
-    state_copy = fs;
-    list_of_words = da_new();
-    read_words();
-    char** words = da_get(list_of_words);
-    while (*words) {
-        printf("%s\n", *words++);
-    }
-    clear_list();
-    da_free(list_of_words);
-}
-
