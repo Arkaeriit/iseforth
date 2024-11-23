@@ -4,8 +4,8 @@ CC := gcc
 
 all : iseforth
 
-C_SRC := main.c dynamic_array.c output_text.c completion.c
-C_HEADERS := dynamic_array.h output_text.h completion.h
+C_SRC := main.c dynamic_array.c output_text.c completion.c config.c
+C_HEADERS := dynamic_array.h output_text.h completion.h config.h
 C_OBJS := $(C_SRC:%.c=%.o)
 
 iseforth : $(C_OBJS)

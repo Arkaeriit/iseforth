@@ -4,6 +4,7 @@
 #include "output_text.h"
 #include "completion.h"
 #include <SEForth.h>
+#include "config.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -11,10 +12,12 @@
 int main(void) {
     output_init();
     forth_state_t* fs = sef_init();
+    sef_parse_string(fs, "s\"  ok \" drop constant isef_prompt ");
     completion_init(fs);
+    config_init(fs);
     rl_completion_entry_function = completion_generator;
     for (int i=0; i<10; i++) {
-        char* line = readline("> ");
+        char* line = readline(config_get_prompt());
         if (line == NULL) {
             break;
         }
