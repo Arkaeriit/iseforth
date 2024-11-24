@@ -33,8 +33,45 @@ static void deinit(forth_state_t* fs) {
     output_deinit();
 }
 
-int main(void) {
+static bool try_to_read_new_file(forth_state_t* fs) {
+    if (!sef_is_running(fs)) {
+        return false;
+    }
+
+    sef_parse_string(fs, "next-arg ");
+    size_t size = (size_t) sef_pop_data(fs);
+    const char* arg = (const char*) sef_pop_data(fs);
+    (void) size;
+
+    if (arg == NULL) {
+        return false;
+    }
+
+    FILE* f = fopen(arg, "r");
+    if (!f) {
+        fprintf(stderr, "Unable to read %s.\n", arg);
+        sef_parse_string(fs, "bye ");
+        return false;
+    }
+
+    char c;
+    while ((c = fgetc(f)) != EOF) {
+        sef_parse_char(fs, c);
+    }
+    fclose(f);
+
+    output_display();
+    return true;
+}
+
+static void read_all_args(forth_state_t* fs) {
+    while (try_to_read_new_file(fs));
+}
+
+int main(int argc, char** argv) {
     forth_state_t* fs = init();
+    sef_feed_arguments(fs, argc, argv);
+    read_all_args(fs);
     while (sef_is_running(fs)) {
         char* line = readline(config_get_prompt());
         clear_color();
