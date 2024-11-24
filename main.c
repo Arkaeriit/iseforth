@@ -7,7 +7,10 @@
 #include "config.h"
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 #include <stdio.h>
+
+static_assert(SEF_STORE_NAME == 1 && SEF_PROGRAMMING_TOOLS == 1, "iseforth needs a version of seforth compiled with programming tools and names saved.");
 
 static void clear_color(void) {
     printf("\e[m");
