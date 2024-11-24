@@ -115,3 +115,17 @@ void completion_deinit(void) {
     da_free(list_of_words);
 }
 
+/* ------------------------------- Misc helper ------------------------------ */
+
+bool is_word_defined(const char* word) {
+    char** words = da_get(list_of_words);
+    bool ret = false;
+    while (*words) {
+        if (!strcmp(word, *words++)) {
+            ret = true;
+            break;
+        }
+    }
+    return ret;
+}
+
