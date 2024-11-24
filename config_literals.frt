@@ -8,11 +8,3 @@ s\" \e[0;96m" drop constant isef_cyan
 s\" \e[0;30m" drop constant isef_black
 s\" \e[0;97m" drop constant isef_white
 
-( Default config values )
-s"  ok " drop constant isef_prompt
-s" ... " drop constant isef_compiling_prompt
-isef_blue constant isef_prompt_color
-isef_yellow constant isef_code_color
-s" /tmp/iseforth-history" drop constant isef_history_file
-1000 constant isef_history_file_size
-

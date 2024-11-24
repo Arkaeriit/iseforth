@@ -118,6 +118,7 @@ void completion_deinit(void) {
 /* ------------------------------- Misc helper ------------------------------ */
 
 bool is_word_defined(const char* word) {
+    read_words();
     char** words = da_get(list_of_words);
     bool ret = false;
     while (*words) {
