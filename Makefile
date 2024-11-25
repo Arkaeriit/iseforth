@@ -1,6 +1,7 @@
 CFLAGS := -Wall -Wextra -g
 LDFLAGS := -lseforth -lreadline
 CC := gcc
+PREFIX := /usr/local
 
 all : iseforth
 
@@ -19,6 +20,12 @@ iseforth : $(C_OBJS)
 		 echo "const char* $$name = " > $@
 	cat $< | sed 's:\\:\\\\:g; s:( [^)]*): :g; s:\s\+\([^"]\): \1:g; s:\\ .*::;  s:":\\":g; s:^:":; s:$$:\\n":;' | grep -v '" \?\\n"'  >> $@
 	echo ';' >> $@
+
+install : iseforth
+	cp $< $(PREFIX)/bin/iseforth
+
+uninstall :
+	rm -f $(PREFIX)/bin/iseforth
 
 clean :
 	rm -f *.o
