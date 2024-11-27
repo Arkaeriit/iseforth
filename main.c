@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
     forth_state_t* fs = init();
     sef_feed_arguments(fs, argc, argv);
     read_all_args(fs);
-    while (sef_is_running(fs)) {
+    while (!sef_asked_bye(fs)) {
         char* line = readline(config_get_prompt());
         clear_color();
         if (line == NULL) {
@@ -84,6 +84,9 @@ int main(int argc, char** argv) {
         sef_parse_string(fs, line);
         sef_parse_char(fs, '\n');
         output_display();
+        if (!sef_is_running(fs)) {
+            sef_restart(fs);
+        }
     }
     deinit(fs);
     return 0;
