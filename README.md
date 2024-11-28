@@ -41,6 +41,8 @@ To help you define colors prompt, you can use the pre-defined colors:
 * `isef_black`
 * `isef_white`
 
+But if you don't use them, remember than the prompt color configuration values must only contain ANSI escape sequence for color and style. 
+
 Note that string literals and strings made with `<# #>` are already terminated in SEForth, so the null-terminated sequences are easy to do.
 
 Here is a configuration example:

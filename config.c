@@ -1,3 +1,4 @@
+#include <readline/readline.h>
 #include "completion.h"
 #include <SEForth.h>
 #include <string.h>
@@ -53,9 +54,9 @@ static char* get_current_prompt(void) {
 char* config_get_prompt(void) {
     static char* prompt = NULL;
     free(prompt);
-    size_t needed_size = 1 + strlen(get_current_prompt()) + strlen(get_prompt_color()) + strlen(get_code_color());
+    size_t needed_size = 5 + strlen(get_current_prompt()) + strlen(get_prompt_color()) + strlen(get_code_color());
     prompt = malloc(needed_size);
-    sprintf(prompt, "%s%s%s", get_prompt_color(), get_current_prompt(), get_code_color());
+    sprintf(prompt, "%c%s%c%s%c%s%c", RL_PROMPT_START_IGNORE, get_prompt_color(), RL_PROMPT_END_IGNORE, get_current_prompt(), RL_PROMPT_START_IGNORE, get_code_color(), RL_PROMPT_END_IGNORE);
     return prompt;
 }
 

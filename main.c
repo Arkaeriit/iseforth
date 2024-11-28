@@ -78,10 +78,12 @@ int main(int argc, char** argv) {
         if (line == NULL) {
             break;
         }
+        sef_parse_string(fs, line);
         if (strlen(line) > 0) {
             history_add(line);
+        } else {
+            free(line);
         }
-        sef_parse_string(fs, line);
         sef_parse_char(fs, '\n');
         output_display();
         if (!sef_is_running(fs)) {
