@@ -29,10 +29,6 @@ static void reach_after_space(char** str) {
     reach_after_x(str, ' ');
 }
 
-static void reach_after_new_line(char** str) {
-    reach_after_x(str, '\n');
-}
-
 static void read_words(void) {
     if (sef_is_compiling(state_copy)) {
         return;
@@ -57,6 +53,28 @@ static void read_words(void) {
     free(word_list_copy);
 }
 
+/* ---------------------------- String comparison --------------------------- */
+
+static char to_lower_case(char in) {
+    if ('A' <= in && in <= 'Z') {
+        return in + ('a' - 'A');
+    } else {
+        return in;
+    }
+}
+
+static bool case_insensitive_string_match(const char* a, const char* b, size_t size_of_a) {
+    for (size_t i=0; i<size_of_a; i++) {
+        if (!b[i]) {
+            return false;
+        }
+        if (to_lower_case(a[i]) != to_lower_case(b[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
 /* ----------------------------- Completion API ----------------------------- */
 
 void completion_init(sef_forth_state_t* fs) {
@@ -68,17 +86,16 @@ void completion_init(sef_forth_state_t* fs) {
 }
 
 char* completion_generator(const char* input, int state) {
-static size_t current_index;
-static char** words = NULL;
-
-if (state == 0) {
+    static size_t current_index;
+    static char** words = NULL;
+    if (state == 0) {
         current_index = 0;
         read_words();
         words = da_get(list_of_words);
     }
 
     while (words[current_index]) {
-        if (!strncmp(input, words[current_index], strlen(input))) {
+        if (case_insensitive_string_match(input, words[current_index], strlen(input))) {
             return strdup(words[current_index++]);
         } else {
             current_index++;
