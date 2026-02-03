@@ -22,14 +22,14 @@ The configuration is done in Forth by reading a rc files.
 
 Here are the available options:
 
-|Option name              |Type                                            |Description                                            |Default value          |
-|-------------------------|------------------------------------------------|-------------------------------------------------------|-----------------------|
-|`isef_prompt`            |null-terminated string                          |The prompt showed most time                            |` ok `                 |
-|`isef_compilation_prompt`|null-terminated string                          |The prompt showed whilst defining a word               |`... `                 |
-|`isef_prompt_color`      |ANSI escape sequence in a null-terminated string|The color of the prompt                                |`isef_blue`            |
-|`isef_code_color`        |ANSI escape sequence in a null-terminated string|The color of what you write                            |`isef_yellow`          |
-|`isef_history_file`      |null-terminated string                          |The path to the history file                           |`/tmp/iseforth-history`|
-|`isef_history_file_size` |integer                                         |The maximum allowed number of lines in the history file|`1000`                 |
+|Option name              |Type                                  |Description                                            |Default value          |
+|-------------------------|--------------------------------------|-------------------------------------------------------|-----------------------|
+|`isef_prompt`            |Forth string                          |The prompt showed most time                            |` ok `                 |
+|`isef_compilation_prompt`|Forth string                          |The prompt showed whilst defining a word               |`... `                 |
+|`isef_prompt_color`      |ANSI escape sequence in a Forth string|The color of the prompt                                |`isef_blue`            |
+|`isef_code_color`        |ANSI escape sequence in a Forth string|The color of what you write                            |`isef_yellow`          |
+|`isef_history_file`      |Forth string                          |The path to the history file                           |`/tmp/iseforth-history`|
+|`isef_history_file_size` |integer                               |The maximum allowed number of lines in the history file|`1000`                 |
 
 To help you define colors prompt, you can use the pre-defined colors:
 * `isef_red`
@@ -43,13 +43,11 @@ To help you define colors prompt, you can use the pre-defined colors:
 
 But if you don't use them, remember than the prompt color configuration values must only contain ANSI escape sequence for color and style. 
 
-Note that string literals and strings made with `<# #>` are already terminated in SEForth, so the null-terminated sequences are easy to do.
-
 Here is a configuration example:
 
 ```forth
-: isef_prompt s" OK " drop ;
-isef_green constant isef_prompt_color
+: isef_prompt s" OK " ;
+: isef_prompt_color isef_green ;
 150 constant isef_history_file_size
 ```
 

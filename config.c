@@ -9,37 +9,59 @@ static forth_state_t* state_copy;
 
 /* --------------------------- State interactions --------------------------- */
 
-static void read_constant_from_forth(forth_state_t* fs, const char* constant_name, void* dest) {
+static void read_int_from_forth(forth_state_t* fs, const char* constant_name, sef_int_t* value) {
     if (sef_is_compiling(fs)) {
         return;
     }
     sef_parse_string(fs, constant_name);
     sef_parse_char(fs, ' ');
-    sef_int_t value = sef_pop_data(fs);
-    memcpy(dest, &value, sizeof(sef_int_t));
+    *value = sef_pop_data(fs);
+}
+
+static size_t read_string_from_forth(forth_state_t* fs, const char* constant_name, char* dest) {
+    sef_parse_string(fs, constant_name);
+    sef_parse_char(fs, ' ');
+    size_t size = (size_t) sef_pop_data(fs);
+    char* str = (char*) sef_pop_data(fs);
+    if (dest != NULL) {
+        memcpy(dest, str, size);
+        dest[size] = 0;
+    }
+    return size+1;
+}
+
+static void allocate_and_read_string_from_froth(forth_state_t* fs, const char* constant_name, char** dest) {
+    if (sef_is_compiling(fs)) {
+        return;
+    }
+    free(*dest);
+    *dest = NULL;
+    size_t size = read_string_from_forth(fs, constant_name, NULL);
+    *dest = malloc(size);
+    read_string_from_forth(fs, constant_name, *dest);
 }
 
 static char* get_prompt(void) {
     static char* prompt;
-    read_constant_from_forth(state_copy, "isef_prompt" ,&prompt);
+    allocate_and_read_string_from_froth(state_copy, "isef_prompt" ,&prompt);
     return prompt;
 }
 
 static char* get_compiling_prompt(void) {
     static char* prompt;
-    read_constant_from_forth(state_copy, "isef_compiling_prompt" ,&prompt);
+    allocate_and_read_string_from_froth(state_copy, "isef_compiling_prompt" ,&prompt);
     return prompt;
 }
 
 static char* get_prompt_color(void) {
     static char* prompt;
-    read_constant_from_forth(state_copy, "isef_prompt_color" ,&prompt);
+    allocate_and_read_string_from_froth(state_copy, "isef_prompt_color" ,&prompt);
     return prompt;
 }
 
 static char* get_code_color(void) {
     static char* prompt;
-    read_constant_from_forth(state_copy, "isef_code_color" ,&prompt);
+    allocate_and_read_string_from_froth(state_copy, "isef_code_color" ,&prompt);
     return prompt;
 }
 
@@ -62,13 +84,13 @@ char* config_get_prompt(void) {
 
 int config_get_history_size(void) {
     static sef_int_t history_file_size;
-    read_constant_from_forth(state_copy, "isef_history_file_size", &history_file_size);
+    read_int_from_forth(state_copy, "isef_history_file_size", &history_file_size);
     return (int) history_file_size;
 }
 
 char* config_get_history_file(void) {
     static char* history_file;
-    read_constant_from_forth(state_copy, "isef_history_file", &history_file);
+    allocate_and_read_string_from_froth(state_copy, "isef_history_file", &history_file);
     return history_file;
 }
 
@@ -104,11 +126,11 @@ static void read_rc_files(void) {
 }
 
 static const char* default_configs[][2] = {
-    {"isef_prompt", "s\"  ok \" drop"},
-    {"isef_compiling_prompt", "s\" ... \" drop"},
+    {"isef_prompt", "s\"  ok \""},
+    {"isef_compiling_prompt", "s\" ... \""},
     {"isef_prompt_color", "isef_blue"},
     {"isef_code_color", "isef_yellow"},
-    {"isef_history_file", "s\" /tmp/iseforth-history\" drop"},
+    {"isef_history_file", "s\" /tmp/iseforth-history\""},
     {"isef_history_file_size", "1000"},
     {NULL, NULL},
 };
@@ -117,10 +139,11 @@ static void set_default_config_if_no_value(const char* config_name, const char* 
     if (is_word_defined(config_name)) {
         return;
     }
-    sef_parse_string(state_copy, default_code_to_execute);
-    sef_parse_string(state_copy, " constant ");
+    sef_parse_string(state_copy, ": ");
     sef_parse_string(state_copy, config_name);
     sef_parse_string(state_copy, " ");
+    sef_parse_string(state_copy, default_code_to_execute);
+    sef_parse_string(state_copy, " ; ");
 }
 
 static void init_default_config(void) {
