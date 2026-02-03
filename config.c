@@ -1,28 +1,25 @@
 #include <readline/readline.h>
 #include "completion.h"
-#include <SEForth.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
+#include "main.h"
 
-static forth_state_t* state_copy;
+static sef_forth_state_t* state_copy;
 
 /* --------------------------- State interactions --------------------------- */
 
-static void read_int_from_forth(forth_state_t* fs, const char* constant_name, sef_int_t* value) {
+static void read_int_from_forth(sef_forth_state_t* fs, const char* constant_name, sef_int_t* value) {
     if (sef_is_compiling(fs)) {
         return;
     }
-    sef_parse_string(fs, constant_name);
-    sef_parse_char(fs, ' ');
-    *value = sef_pop_data(fs);
+    sef_eval_string(fs, constant_name);
+    *value = sef_pop_from_data_stack(fs);
 }
 
-static size_t read_string_from_forth(forth_state_t* fs, const char* constant_name, char* dest) {
-    sef_parse_string(fs, constant_name);
-    sef_parse_char(fs, ' ');
-    size_t size = (size_t) sef_pop_data(fs);
-    char* str = (char*) sef_pop_data(fs);
+static size_t read_string_from_forth(sef_forth_state_t* fs, const char* constant_name, char* dest) {
+    sef_eval_string(fs, constant_name);
+    size_t size = (size_t) sef_pop_from_data_stack(fs);
+    char* str = (char*) sef_pop_from_data_stack(fs);
     if (dest != NULL) {
         memcpy(dest, str, size);
         dest[size] = 0;
@@ -30,7 +27,7 @@ static size_t read_string_from_forth(forth_state_t* fs, const char* constant_nam
     return size+1;
 }
 
-static void allocate_and_read_string_from_froth(forth_state_t* fs, const char* constant_name, char** dest) {
+static void allocate_and_read_string_from_froth(sef_forth_state_t* fs, const char* constant_name, char** dest) {
     if (sef_is_compiling(fs)) {
         return;
     }
@@ -99,11 +96,7 @@ static void read_a_config_file(const char* filename) {
     if (!f) {
         return;
     }
-    char c;
-    while ((c = fgetc(f)) != EOF) {
-        sef_parse_char(state_copy, c);
-    }
-    fclose(f);
+    eval_file(state_copy, f);
 }
 
 /* ---------------------------- rc files reading ---------------------------- */
@@ -139,11 +132,11 @@ static void set_default_config_if_no_value(const char* config_name, const char* 
     if (is_word_defined(config_name)) {
         return;
     }
-    sef_parse_string(state_copy, ": ");
-    sef_parse_string(state_copy, config_name);
-    sef_parse_string(state_copy, " ");
-    sef_parse_string(state_copy, default_code_to_execute);
-    sef_parse_string(state_copy, " ; ");
+    const char* template = ": %s %s ;";
+    size_t code_size = strlen(config_name) + strlen(default_code_to_execute) + strlen(template);
+    char code[code_size];
+    sprintf(code, template, config_name, default_code_to_execute);
+    sef_eval_string(state_copy, code);
 }
 
 static void init_default_config(void) {
@@ -158,9 +151,9 @@ static void init_default_config(void) {
 
 extern const char* config_literals;
 
-void config_init(forth_state_t* fs) {
+void config_init(sef_forth_state_t* fs) {
     state_copy = fs;
-    sef_parse_string(fs, config_literals);
+    sef_eval_string(fs, config_literals);
     read_rc_files();
     init_default_config();
     get_prompt();

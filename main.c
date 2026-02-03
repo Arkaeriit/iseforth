@@ -10,15 +10,16 @@
 #include <assert.h>
 #include <stdio.h>
 
-static_assert(SEF_STORE_NAME == 1 && SEF_PROGRAMMING_TOOLS == 1, "iseforth needs a version of seforth compiled with programming tools and names saved.");
+static_assert(SEF_ARG_AND_EXIT_CODE == 1 && SEF_PROGRAMMING_TOOLS == 1, "iseforth needs a version of seforth compiled with the arg and exit code word set and the programming tools word set.");
 
 static void clear_color(void) {
     printf("\e[m");
 }
 
-static forth_state_t* init(void) {
+static sef_forth_state_t* init(void) {
     output_init();
-    forth_state_t* fs = sef_init();
+    sef_forth_state_t* fs = malloc(sizeof(sef_forth_state_t));
+    sef_init(fs);
     completion_init(fs);
     config_init(fs);
     history_init();
@@ -26,50 +27,64 @@ static forth_state_t* init(void) {
     return fs;
 }
 
-static void deinit(forth_state_t* fs) {
+static void deinit(sef_forth_state_t* fs) {
     history_deinit();
     completion_deinit();
-    sef_free(fs);
+    free(fs);
     output_deinit();
 }
 
-static bool try_to_read_new_file(forth_state_t* fs) {
-    if (!sef_is_running(fs)) {
+void eval_file(sef_forth_state_t* fs, FILE* f) {
+    rewind(f);
+    fseek(f, 0L, SEEK_END);
+    size_t file_size = ftell(f);
+    rewind(f);
+
+    char* content = malloc(file_size + 1);
+    if (content == NULL) {
+        fprintf(stderr, "Can't allocate buffer to read file.\n");
+        exit(-1);
+    }
+
+    fread(content, 1, file_size, f);
+    content[file_size] = 0;
+    sef_eval_string(fs, content);
+    free(content);
+    fclose(f);
+}
+
+static bool try_to_read_new_file(sef_forth_state_t* fs) {
+    if (!sef_ready_to_run(fs)) {
         return false;
     }
 
-    sef_parse_string(fs, "next-arg ");
-    size_t size = (size_t) sef_pop_data(fs);
-    const char* arg = (const char*) sef_pop_data(fs);
-    (void) size;
+    sef_force_string_interpretation(fs, "next-arg");
+    size_t size = (size_t) sef_pop_from_data_stack(fs);
+    const char* arg = (const char*) sef_pop_from_data_stack(fs);
 
-    if (arg == NULL) {
+    if (arg == 0 || size == 0) {
         return false;
     }
 
     FILE* f = fopen(arg, "r");
     if (!f) {
         fprintf(stderr, "Unable to read %s.\n", arg);
-        sef_parse_string(fs, "bye ");
+        sef_force_string_interpretation(fs, "bye");
         return false;
     }
 
-    char c;
-    while ((c = fgetc(f)) != EOF) {
-        sef_parse_char(fs, c);
-    }
-    fclose(f);
+    eval_file(fs, f);
 
     output_display();
     return true;
 }
 
-static void read_all_args(forth_state_t* fs) {
+static void read_all_args(sef_forth_state_t* fs) {
     while (try_to_read_new_file(fs));
 }
 
 int main(int argc, char** argv) {
-    forth_state_t* fs = init();
+    sef_forth_state_t* fs = init();
     sef_feed_arguments(fs, argc, argv);
     read_all_args(fs);
     while (!sef_asked_bye(fs)) {
@@ -78,15 +93,14 @@ int main(int argc, char** argv) {
         if (line == NULL) {
             break;
         }
-        sef_parse_string(fs, line);
+        sef_eval_string(fs, line);
         if (strlen(line) > 0) {
             history_add(line);
         } else {
             free(line);
         }
-        sef_parse_char(fs, '\n');
         output_display();
-        if (!sef_is_running(fs)) {
+        if (!sef_ready_to_run(fs) && !sef_asked_bye(fs)) {
             sef_restart(fs);
         }
     }
