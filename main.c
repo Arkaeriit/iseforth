@@ -11,7 +11,6 @@
 #include <stdio.h>
 
 static_assert(SEF_ARG_AND_EXIT_CODE && SEF_PROGRAMMING_TOOLS, "iseforth needs a version of seforth compiled with the arg and exit code word set and the programming tools word set.");
-static_assert(SEF_ABORT_STOP_FORTH, "iseforth should needs a version of seforth with `SEF_ABORT_STOP_FORTH` enabled.");
 
 static void clear_color(void) {
     printf("\e[m");
@@ -105,7 +104,8 @@ int main(int argc, char** argv) {
             sef_restart(fs);
         }
     }
+    int ret = sef_exit_code(fs);
     deinit(fs);
-    return 0;
+    return ret;
 }
 
