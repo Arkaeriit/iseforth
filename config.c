@@ -99,6 +99,20 @@ static void read_a_config_file(const char* filename) {
     eval_file(state_copy, f);
 }
 
+static void set_block_file(void) {
+#if SEF_BLOCK_FILE
+    sef_int_t number_of_blocks;
+    read_int_from_forth(state_copy, "isef_number_of_blocks", &number_of_blocks);
+    if (number_of_blocks < 1) {
+        return;
+    }
+    char* block_file_path = malloc(read_string_from_forth(state_copy, "isef_block_file", NULL)+1);
+    read_string_from_forth(state_copy, "isef_block_file", block_file_path);
+    sef_register_block_file(state_copy, block_file_path, number_of_blocks);
+    free(block_file_path);
+#endif
+}
+
 /* ---------------------------- rc files reading ---------------------------- */
 
 static void read_config_files_from_env_path(const char* env, const char* filename) {
@@ -125,6 +139,8 @@ static const char* default_configs[][2] = {
     {"isef_code_color", "isef_yellow"},
     {"isef_history_file", "s\" /tmp/iseforth-history\""},
     {"isef_history_file_size", "1000"},
+    {"isef_block_file", "s\" /dev/null\""},
+    {"isef_number_of_blocks", "0"},
     {NULL, NULL},
 };
 
@@ -160,5 +176,6 @@ void config_init(sef_forth_state_t* fs) {
     config_get_prompt();
     get_compiling_prompt();
     config_get_history_size();
+    set_block_file();
 }
 

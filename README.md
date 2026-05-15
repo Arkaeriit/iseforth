@@ -30,6 +30,8 @@ Here are the available options:
 |`isef_code_color`        |ANSI escape sequence in a Forth string|The color of what you write                            |`isef_yellow`          |
 |`isef_history_file`      |Forth string                          |The path to the history file                           |`/tmp/iseforth-history`|
 |`isef_history_file_size` |integer                               |The maximum allowed number of lines in the history file|`1000`                 |
+|`isef_block_file`        |Forth string                          |Path of the file used to store Forth blocks            |`/dev/null`            |
+|`isef_number_of_blocks`  |integer                               |Number of blocks in the block file                     |`0`                    |
 
 To help you define colors prompt, you can use the pre-defined colors:
 * `isef_red`
@@ -59,3 +61,4 @@ The rc files are:
 
 They are read in that order, the latest configuration defined taking priority. 
 
+The fields `isef_block_file` and `isef_number_of_blocks` are only relevant if SEForth is compiled with the `SEF_BLOCK_FILE` option.
