@@ -11,6 +11,10 @@ static size_t circular_buffer_index;
 void history_init(void) {
     history_size = config_get_history_size(); 
     circular_buffer_index = 0;
+    if (history_size <= 0) {
+        history_circular_buffer = NULL;
+        return;
+    }
     history_circular_buffer = calloc(history_size, sizeof(char*));
 
     FILE* history_file = fopen(config_get_history_file(), "r");
@@ -37,23 +41,32 @@ void history_init(void) {
 
 void history_add(char* line) {
     add_history(line);
+    if (history_size <= 0) {
+        free(line);
+        return;
+    }
     free(history_circular_buffer[circular_buffer_index]);
-    history_circular_buffer[circular_buffer_index++] = line;
+    history_circular_buffer[circular_buffer_index] = line;
+    circular_buffer_index = (circular_buffer_index + 1) % history_size;
 }
 
 void history_deinit(void) {
     FILE* history_file = fopen(config_get_history_file(), "w");
-    if (history_file) {
+    if (history_file && history_size > 0) {
         for (int i=0; i<history_size; i++) {
             if (history_circular_buffer[i]) {
                 fprintf(history_file, "%s\n", history_circular_buffer[i]);
             }
         }
         fclose(history_file);
+    } else if (history_file) {
+        fclose(history_file);
+    }
+    if (history_size <= 0) {
+        return;
     }
     for (int i=0; i<history_size; i++) {
         free(history_circular_buffer[i]);
     }
     free(history_circular_buffer);
 }
-
